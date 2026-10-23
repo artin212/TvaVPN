@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  SECURITY (audit 1.2.7): the Android 12+ successor to backup_rules.xml.
+  android:allowBackup is already false, so nothing should leave the device in the
+  first place; these rules are defense-in-depth for both modern transports.
+
+  What the app data dir holds: the user's manual endpoints and scan ranges, the
+  diagnostics log (engine output, exit IPs) and the sealed Zero Trust secrets. On
+  a hostile network every one of those is sensitive metadata, so cloud backup AND
+  device-to-device transfer are denied for every domain.
+-->
+<data-extraction-rules>
+    <cloud-backup>
+        <exclude domain="file" path="." />
+        <exclude domain="database" path="." />
+        <exclude domain="sharedpref" path="." />
+        <exclude domain="external" path="." />
+    </cloud-backup>
+    <device-transfer>
+        <exclude domain="file" path="." />
+        <exclude domain="database" path="." />
+        <exclude domain="sharedpref" path="." />
+        <exclude domain="external" path="." />
+    </device-transfer>
+</data-extraction-rules>

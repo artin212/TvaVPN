@@ -1,0 +1,24 @@
+tvaVPN - Android Studio project (based on the Aether 1.5.0 source)
+
+This folder holds the app source only. Three things are kept in separate zips
+because they are big or secret, and they must NEVER go to GitHub or to an AI:
+
+  tvaVPN-native-libs.zip   the VPN engine files (.so), about 90 MB
+  tvaVPN-signing-key.zip   your private signing key and its password
+  tvaVPN-engine-source.zip (optional) the engine source code, about 27 MB
+
+How to put it together
+1. Unzip tvaVPN-source.zip into a folder named tvaVPN.
+2. Unzip tvaVPN-native-libs.zip INTO THAT SAME FOLDER (answer "merge/yes").
+   It creates app/src/main/jniLibs/arm64-v8a/ with 7 files.
+3. Open the folder in Android Studio (File > Open). Gradle JDK = 17.
+4. Run with your phone connected: a debug build needs no key.
+5. For a release APK, unzip tvaVPN-signing-key.zip into the same folder, so
+   release.keystore and keystore.properties sit next to settings.gradle.kts,
+   then Build > Generate Signed App Bundle / APK (or assembleRelease).
+
+.gitignore already blocks the .so files, release.keystore and
+keystore.properties, so git will not pick them up by mistake.
+
+The engine files come from the official Aether 1.5.0 arm64 APK (core 2.3.0).
+Engine source: https://github.com/CluvexStudio/Aether

@@ -1,0 +1,46 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  SECURITY: deny cleartext HTTP for the entire app. The only plain-HTTP use in
+  the codebase is the geolocation probe (NetProbe), which deliberately uses raw
+  sockets (exempt from this policy by design) and carries no user data — see
+  docs/SECURITY_AUDIT.md. This config is defense-in-depth: it guarantees that
+  no third-party library or future HttpURLConnection/OkHttp code can silently
+  send cleartext traffic.
+
+  TRUST ANCHORS: SYSTEM ONLY (audit 1.2.9-r3, mitigation for F-4).
+
+  The 1.2.9 audit's only MitM finding was that trust is the platform CA store,
+  so a device carrying an attacker-installed root CA can intercept the app's own
+  TLS — the AI conversation with Google, the geolocation probe, the Psiphon
+  front's reachability check. Certificate pinning was rejected then, and is
+  rejected again, for a good reason: pinning
+  `generativelanguage.googleapis.com` in a client that ships from a GitHub
+  release and cannot be hot-fixed turns a routine Google certificate rotation
+  into a permanently broken feature.
+
+  This is the fix that removes the attack without that fragility. Android's
+  default trust store on API 24+ already excludes user-added CAs for apps that
+  target it, but the default is INHERITED, which means a future
+  `targetSdk`/`base-config` edit could quietly restore it. Declaring the anchor
+  set explicitly makes the property EXPLICIT and permanent:
+
+    * `src="system"` — only the OS-shipped CAs are trusted.
+    * `src="user"` is deliberately absent, so a root certificate installed
+      through Settings (the standard way an MitM proxy such as mitmproxy,
+      Burp or a hostile network's "install this certificate" page works)
+      CANNOT validate a chain for this app. Interception of the app's own
+      requests fails the handshake instead of succeeding silently.
+
+  What this does NOT affect: the tunnel itself. WireGuard and MASQUE/QUIC carry
+  their own key material and their own validation inside the engine, and the
+  user's browsing traffic is not TLS-terminated here at all — it is forwarded.
+  So no user-visible capability is lost, and debugging with a proxy simply needs
+  a debuggable build (`debug-overrides` is not shipped, on purpose).
+-->
+<network-security-config>
+    <base-config cleartextTrafficPermitted="false">
+        <trust-anchors>
+            <certificates src="system" />
+        </trust-anchors>
+    </base-config>
+</network-security-config>
